@@ -28,6 +28,14 @@ dependencies:
 - unordered-containers
 - vector
 
+default-extensions:
+- ConstraintKinds
+- DeriveFunctor
+- ImportQualifiedPost
+- LambdaCase
+- RecordWildCards
+- Strict
+
 ghc-options:
 - -Wall
 - -Wcompat
