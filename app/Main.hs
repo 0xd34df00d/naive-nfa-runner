@@ -11,7 +11,7 @@ module Main(main) where
 import Control.Applicative
 import Data.ByteString qualified as BS
 import Data.Functor
-import Data.EnumMap.Strict qualified as EM
+import Data.Vector qualified as V
 import Data.Word
 import System.Environment
 import System.IO.MMap
@@ -26,7 +26,7 @@ data Trans q
   | TCh Word8 q
   deriving (Eq, Show)
 
-type TransMap q = EM.EnumMap q (Trans q)
+type TransMap q = V.Vector (Trans q)
 
 data NFA q = NFA
   { transitions :: TransMap q
@@ -51,9 +51,7 @@ instance Alternative MatchResult where
 -- * Matching
 
 getTrans :: StateId q => q -> TransMap q -> Trans q
-getTrans q m = case q `EM.lookup` m of
-                 Just t -> t
-                 Nothing -> error "invariant failure"
+getTrans q m = m V.! fromIntegral q
 
 match :: StateId q => NFA q -> BS.ByteString -> MatchResult Int
 match NFA{..} bs = go initState 0
@@ -74,20 +72,20 @@ nfa = NFA{..}
   where
   initState = 0
   finState = 13
-  transitions = EM.fromList
-    [ (0, TBranch 2 1)
-    , (1, TEps 12)
-    , (2, TBranch 4 8)
-    , (3, TEps 0)
-    , (4, TCh a 5)
-    , (5, TEps 6)
-    , (6, TCh a 7)
-    , (7, TEps 3)
-    , (8, TCh a 9)
-    , (9, TEps 10)
-    , (10, TCh b 11)
-    , (11, TEps 3)
-    , (12, TCh z 13)
+  transitions = V.fromList
+    [ TBranch 2 1
+    , TEps 12
+    , TBranch 4 8
+    , TEps 0
+    , TCh a 5
+    , TEps 6
+    , TCh a 7
+    , TEps 3
+    , TCh a 9
+    , TEps 10
+    , TCh b 11
+    , TEps 3
+    , TCh z 13
     ]
   a = 97
   b = 98
