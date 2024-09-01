@@ -1,17 +1,16 @@
-{-# LANGUAGE LinearTypes #-}
-{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE NumericUnderscores #-}
 {-# LANGUAGE Strict #-}
 
 module Main(main) where
 
 import Control.Applicative
+import Control.Monad.ST
+import Data.Array.ST qualified as A
 import Data.ByteString qualified as BS
 import Data.Functor
 import Data.EnumMap.Strict qualified as EM
-import Data.Vector.Mutable.Linear qualified as VL
-import Data.Unrestricted.Linear qualified as L
+import Data.Vector.Unboxed.Mutable qualified as VM
 import Data.Word
-import Prelude.Linear qualified as L
 import System.Environment
 import System.IO.MMap
 
@@ -54,22 +53,21 @@ getTrans q m = case q `EM.lookup` m of
                  Just t -> t
                  Nothing -> error "invariant failure"
 
-match :: forall q. StateId q => NFA q -> BS.ByteString -> MatchResult Int
-match NFA{..} bs = L.unur L.$ VL.empty L.$ go initState 0
-  where
-  go :: q -> Int -> VL.Vector (q, Int) %1-> L.Ur (MatchResult Int)
-  go q i stack
-    | q == finState = stack `L.lseq` L.Ur (SuccessAt i)
-    | otherwise = case q `getTrans` transitions of
-                    TEps q' -> go q' i stack
-                    TBranch q1 q2 -> go q1 i L.$ (q2, i) `VL.push` stack
-                    TCh ch q'
-                      | bs `BS.indexMaybe` i == Just ch -> go q' (i + 1) stack
-                      | otherwise -> case VL.pop stack of
-                                      (L.Ur top, stack'')
-                                        | (Just (q'', i'')) <- top -> go q'' i'' stack''
-                                        | otherwise -> stack'' `L.lseq` L.Ur Failure
-
+match :: (VM.Unbox q, StateId q) => NFA q -> BS.ByteString -> MatchResult Int
+match NFA{..} bs = runST $ do
+  stack <- VM.unsafeNew 24_000_000
+  let go s q i
+        | q == finState = pure $ SuccessAt i
+        | otherwise = case q `getTrans` transitions of
+              TEps q' -> go s q' i
+              TBranch q1 q2 -> do VM.unsafeWrite stack s (q2, i)
+                                  go (s + 1) q1 i
+              TCh ch q'
+                | bs `BS.indexMaybe` i == Just ch -> go s q' (i + 1)
+                | s == 0 -> pure Failure
+                | otherwise -> do (q'', i'') <- VM.unsafeRead stack (s - 1)
+                                  go (s - 1) q'' i''
+  go 0 initState 0
 
 -- * Benchmarking
 
