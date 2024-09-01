@@ -49,19 +49,18 @@ getTrans q m = case q `EM.lookup` m of
                  Just t -> t
                  Nothing -> error "invariant failure"
 
-data Lazy a = Lazy { unLazy :: ~a } deriving (Functor)
-
 match :: StateId q => NFA q -> BS.ByteString -> MatchResult Int
-match NFA{..} bs = go initState 0 (Lazy Failure)
+match NFA{..} bs = go initState 0 mempty
   where
-  go q i cont
+  go q i stack
     | q == finState = SuccessAt i
     | otherwise = case q `getTrans` transitions of
-             TEps q' -> go q' i cont
-             TBranch q1 q2 -> go q1 i (Lazy $ go q2 i cont)
+             TEps q' -> go q' i stack
+             TBranch q1 q2 -> go q1 i ((q2, i) : stack)
              TCh ch q'
-               | bs `BS.indexMaybe` i == Just ch -> go q' (i + 1) cont
-               | otherwise -> unLazy cont
+               | bs `BS.indexMaybe` i == Just ch -> go q' (i + 1) stack
+               | ((q'', i'') : stack'') <- stack -> go q'' i'' stack''
+               | otherwise -> Failure
 
 
 -- * Benchmarking
