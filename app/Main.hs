@@ -60,15 +60,15 @@ instance Alternative MatchResult where
 
 toWord64 :: Integral q => Trans q -> Word64
 toWord64 = \case
-  TEps q -> (fromIntegral q .<<. 2) .|. 0b00
-  TBranch q1 q2 -> (fromIntegral q1 .<<. 18) .|. (fromIntegral q2 .<<. 2) .|. 0b01
-  TCh w q -> (fromIntegral w .<<. 18) .|. (fromIntegral q .<<. 2) .|. 0b10
+  TEps q        -> 0b00 .|. (fromIntegral q .<<. 2)
+  TBranch q1 q2 -> 0b01 .|. (fromIntegral q1 .<<. 18) .|. (fromIntegral q2 .<<. 2)
+  TCh w q       -> 0b10 .|. (fromIntegral w .<<. 2) .|. (fromIntegral q .<<. 18)
 
 fromWord64 :: Integral q => Word64 -> Trans q
 fromWord64 w = case w .&. 0b11 of
   0b00 -> TEps $ fromIntegral $ w .>>. 2
-  0b01 -> TBranch (fromIntegral $ (w .>>. 18) .&. 0xffff) (fromIntegral $ (w .>>. 2) .&. 0xffff)
-  _    -> TCh (fromIntegral $ w .>>. 18) (fromIntegral $ (w .>>. 2) .&. 0xffff)
+  0b01 -> TBranch (fromIntegral $ w .>>. 18) (fromIntegral $ (w .>>. 2) .&. 0xffff)
+  _    -> TCh (fromIntegral $ w .>>. 2) (fromIntegral $ w .>>. 18)
 
 instance Integral q => VU.IsoUnbox (Trans q) Word64 where
   toURepr = toWord64
@@ -83,7 +83,7 @@ deriving via (Trans q `VU.As` Word64) instance Integral q => VG.Vector  VU.Vecto
 getTrans :: StateId q => q -> TransMap q -> Trans q
 getTrans q m = m `VU.unsafeIndex` fromIntegral q
 
-match :: NFA Word32 -> BS.ByteString -> MatchResult Int
+match :: (VM.Unbox q, StateId q) => NFA q -> BS.ByteString -> MatchResult Int
 match NFA{..} bs = runST $ do
   stack <- VM.unsafeNew 24_000_000
   let go s q i
