@@ -1,13 +1,24 @@
+{-# LANGUAGE BinaryLiterals #-}
+{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE DerivingVia #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE NumericUnderscores #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE Strict #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE TypeFamilies #-}
 
 module Main(main) where
 
 import Control.Applicative
 import Control.Monad.ST
+import Data.Bits
 import Data.ByteString qualified as BS
 import Data.Functor
 import Data.Vector qualified as V
+import Data.Vector.Generic qualified as VG
+import Data.Vector.Generic.Mutable qualified as VG
+import Data.Vector.Unboxed qualified as VU
 import Data.Vector.Unboxed.Mutable qualified as VM
 import Data.Word
 import System.Environment
@@ -21,9 +32,9 @@ data Trans q
   = TEps q
   | TBranch q q
   | TCh Word8 q
-  deriving (Eq, Show)
+  deriving (Eq, Show, VU.Unbox)
 
-type TransMap q = V.Vector (Trans q)
+type TransMap q = VU.Vector (Trans q)
 
 data NFA q = NFA
   { transitions :: TransMap q
@@ -47,10 +58,32 @@ instance Alternative MatchResult where
 
 -- * Matching
 
-getTrans :: StateId q => q -> TransMap q -> Trans q
-getTrans q m = m `V.unsafeIndex` fromIntegral q
+toWord64 :: Integral q => Trans q -> Word64
+toWord64 = \case
+  TEps q -> (fromIntegral q .<<. 2) .|. 0b00
+  TBranch q1 q2 -> (fromIntegral q1 .<<. 18) .|. (fromIntegral q2 .<<. 2) .|. 0b01
+  TCh w q -> (fromIntegral w .<<. 18) .|. (fromIntegral q .<<. 2) .|. 0b10
 
-match :: (VM.Unbox q, StateId q) => NFA q -> BS.ByteString -> MatchResult Int
+fromWord64 :: Integral q => Word64 -> Trans q
+fromWord64 w = case w .&. 0b11 of
+  0b00 -> TEps $ fromIntegral $ w .>>. 2
+  0b01 -> TBranch (fromIntegral $ (w .>>. 18) .&. 0xffff) (fromIntegral $ (w .>>. 2) .&. 0xffff)
+  _    -> TCh (fromIntegral $ w .>>. 18) (fromIntegral $ (w .>>. 2) .&. 0xffff)
+
+instance Integral q => VU.IsoUnbox (Trans q) Word64 where
+  toURepr = toWord64
+  fromURepr = fromWord64
+
+newtype instance VU.MVector s (Trans q) = MV_Trans (VU.MVector s Word64)
+newtype instance VU.Vector    (Trans q) = V_Trans  (VU.Vector    Word64)
+
+deriving via (Trans q `VU.As` Word64) instance Integral q => VG.MVector VU.MVector (Trans q)
+deriving via (Trans q `VU.As` Word64) instance Integral q => VG.Vector  VU.Vector  (Trans q)
+
+getTrans :: StateId q => q -> TransMap q -> Trans q
+getTrans q m = m `VU.unsafeIndex` fromIntegral q
+
+match :: NFA Word32 -> BS.ByteString -> MatchResult Int
 match NFA{..} bs = runST $ do
   stack <- VM.unsafeNew 24_000_000
   let go s q i
@@ -73,7 +106,7 @@ nfa = NFA{..}
   where
   initState = 0
   finState = 13
-  transitions = V.fromList
+  transitions = VU.fromList
     [ TBranch 2 1
     , TEps 12
     , TBranch 4 8
