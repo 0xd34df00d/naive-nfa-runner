@@ -58,17 +58,20 @@ instance Alternative MatchResult where
 
 -- * Matching
 
+tagShift :: Int
+tagShift = 48
+
 toWord64 :: Integral q => Trans q -> Word64
 toWord64 = \case
-  TEps q        -> 0b00 .|. (fromIntegral q .<<. 2)
-  TBranch q1 q2 -> 0b01 .|. (fromIntegral q1 .<<. 18) .|. (fromIntegral q2 .<<. 2)
-  TCh w q       -> 0b10 .|. (fromIntegral w .<<. 2) .|. (fromIntegral q .<<. 18)
+  TEps q        -> (0b01 .<<. tagShift) .|. fromIntegral q
+  TBranch q1 q2 -> (0b00 .<<. tagShift) .|. fromIntegral q1 .|. (fromIntegral q2 .<<. 32)
+  TCh w q       -> (0b11 .<<. tagShift) .|. fromIntegral w  .|. (fromIntegral q .<<. 8)
 
 fromWord64 :: Integral q => Word64 -> Trans q
-fromWord64 w = case w .&. 0b11 of
-  0b00 -> TEps $ fromIntegral $ w .>>. 2
-  0b01 -> TBranch (fromIntegral $ w .>>. 18) (fromIntegral $ (w .>>. 2) .&. 0xffff)
-  _    -> TCh (fromIntegral $ w .>>. 2) (fromIntegral $ w .>>. 18)
+fromWord64 w = case w .>>. tagShift of
+  0b01 -> TEps $ fromIntegral w
+  0b00 -> TBranch (fromIntegral w) (fromIntegral $ w .>>. 32)
+  _    -> TCh (fromIntegral w) (fromIntegral $ w .>>. 8)
 
 instance Integral q => VU.IsoUnbox (Trans q) Word64 where
   toURepr = toWord64
