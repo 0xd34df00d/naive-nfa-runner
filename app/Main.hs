@@ -1,23 +1,19 @@
 {-# LANGUAGE BinaryLiterals #-}
-{-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE NumericUnderscores #-}
-{-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE Strict #-}
-{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 
 module Main(main) where
 
 import Control.Applicative
 import Control.Monad.ST
+import Data.Array.Base qualified as A
 import Data.Bits
 import Data.ByteString qualified as BS
 import Data.Functor
-import Data.Vector qualified as V
-import Data.Vector.Generic qualified as VG
-import Data.Vector.Generic.Mutable qualified as VG
 import Data.Vector.Unboxed qualified as VU
 import Data.Vector.Unboxed.Mutable qualified as VM
 import Data.Word
@@ -32,9 +28,9 @@ data Trans q
   = TEps q
   | TBranch q q
   | TCh Word8 q
-  deriving (Eq, Show, VU.Unbox)
+  deriving (Eq, Show)
 
-type TransMap q = VU.Vector (Trans q)
+type TransMap q = A.UArray Int Word64
 
 data NFA q = NFA
   { transitions :: TransMap q
@@ -73,20 +69,10 @@ fromWord64 w = case w .>>. tagShift of
   0b00 -> TBranch (fromIntegral w) (fromIntegral $ w .>>. 32)
   _    -> TCh (fromIntegral w) (fromIntegral $ w .>>. 8)
 
-instance Integral q => VU.IsoUnbox (Trans q) Word64 where
-  toURepr = toWord64
-  fromURepr = fromWord64
-
-newtype instance VU.MVector s (Trans q) = MV_Trans (VU.MVector s Word64)
-newtype instance VU.Vector    (Trans q) = V_Trans  (VU.Vector    Word64)
-
-deriving via (Trans q `VU.As` Word64) instance Integral q => VG.MVector VU.MVector (Trans q)
-deriving via (Trans q `VU.As` Word64) instance Integral q => VG.Vector  VU.Vector  (Trans q)
-
 getTrans :: StateId q => q -> TransMap q -> Trans q
-getTrans q m = m `VU.unsafeIndex` fromIntegral q
+getTrans q m = fromWord64 $ m `A.unsafeAt` fromIntegral q
 
-match :: (VM.Unbox q, StateId q) => NFA q -> BS.ByteString -> MatchResult Int
+match :: NFA Word32 -> BS.ByteString -> MatchResult Int
 match NFA{..} bs = runST $ do
   stack <- VM.unsafeNew 24_000_000
   let go s q i
@@ -109,7 +95,7 @@ nfa = NFA{..}
   where
   initState = 0
   finState = 13
-  transitions = VU.fromList
+  transitions = A.listArray (0, 12) $ toWord64 @Word32 <$>
     [ TBranch 2 1
     , TEps 12
     , TBranch 4 8
