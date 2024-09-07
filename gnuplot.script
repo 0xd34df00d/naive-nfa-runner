@@ -41,18 +41,18 @@ set arrow 4 from graph 0.76, first 0.097 to graph 1.00, first 0.097 nohead lt 10
 set label 4 at   graph 0.76, first 0.097                            "Best C++" tc rgb cppColor offset 2,0.5
 
 plot newhistogram "aa...aa" tc rgb fgColor font ",14", \
-     'data.gnuplot' every ::0::8 using 3:xtic(2) ti columnhead lt 1, \
-     ''             every ::0::8 using 5 ti columnhead lt 2, \
-     ''             every ::1::9 using 0:($3 + $5):($3 + $5):($3 + $5 + $4) with errorbars notitle lt 3, \
+     'data.gnuplot' every ::0::9 using 3:xtic(2) ti columnhead lt 1, \
+     ''             every ::0::9 using 5 ti columnhead lt 2, \
+     ''             every ::1::10 using 0:($3 + $5):($3 + $5):($3 + $5 + $4) with errorbars notitle lt 3, \
      newhistogram "aa...aaz" tc rgb fgColor font ",14", \
-     ''             every ::10::18 using 3:xtic(2) notitle lt 1, \
-     ''             every ::10::18 using 5 notitle lt 2, \
-     ''             every ::10::18 using ($0+10):($3 + $5):($3 + $5):($3 + $5 + $4) with errorbars notitle lt 3, \
+     ''             every ::11::20 using 3:xtic(2) notitle lt 1, \
+     ''             every ::11::20 using 5 notitle lt 2, \
+     ''             every ::11::20 using ($0+11):($3 + $5):($3 + $5):($3 + $5 + $4) with errorbars notitle lt 3, \
      newhistogram "ab...ab" tc rgb fgColor font ",14", \
-     ''             every ::19::27 using 3:xtic(2) notitle lt 1, \
-     ''             every ::19::27 using 5 notitle lt 2, \
-     ''             every ::19::27 using ($0+20):($3 + $5):($3 + $5):($3 + $5 + $4) with errorbars notitle lt 3, \
+     ''             every ::21::30 using 3:xtic(2) notitle lt 1, \
+     ''             every ::21::30 using 5 notitle lt 2, \
+     ''             every ::21::30 using ($0+22):($3 + $5):($3 + $5):($3 + $5 + $4) with errorbars notitle lt 3, \
      newhistogram "ab...abz" tc rgb fgColor font ",14", \
-     ''             every ::28::36 using 3:xtic(2) notitle lt 1, \
-     ''             every ::28::36 using 5 notitle lt 2, \
-     ''             every ::28::36 using ($0+30):($3 + $5):($3 + $5):($3 + $5 + $4) with errorbars notitle lt 3, \
+     ''             every ::31::40 using 3:xtic(2) notitle lt 1, \
+     ''             every ::31::40 using 5 notitle lt 2, \
+     ''             every ::31::40 using ($0+33):($3 + $5):($3 + $5):($3 + $5 + $4) with errorbars notitle lt 3, \
