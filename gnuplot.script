@@ -17,17 +17,17 @@ set title "Performance"
 set style fill transparent solid 0.5
 set style histogram rowstacked
 
-set arrow 1 from graph 0,    first 0.134 to graph 0.24, first 0.134 nohead lc "blue" front
-set label 1 at   graph 0.20, first 0.134                            "Best C++" tc "blue" offset 2,0.5
+set arrow 1 from graph 0,    first 0.133 to graph 0.24, first 0.133 nohead lc "blue" front
+set label 1 at   graph 0.20, first 0.133                            "Best C++" tc "blue" offset 2,0.5
 
 set arrow 2 from graph 0.26, first 0.107 to graph 0.49, first 0.107 nohead lc "blue" front
 set label 2 at   graph 0.45, first 0.107                            "Best C++" tc "blue" offset 2,0.5
 
-set arrow 3 from graph 0.51, first 0.109 to graph 0.74, first 0.109 nohead lc "blue" front
-set label 3 at   graph 0.70, first 0.109                            "Best C++" tc "blue" offset 2,0.5
+set arrow 3 from graph 0.51, first 0.108 to graph 0.74, first 0.108 nohead lc "blue" front
+set label 3 at   graph 0.70, first 0.108                            "Best C++" tc "blue" offset 2,0.5
 
-set arrow 4 from graph 0.76, first 0.098 to graph 1.00, first 0.098 nohead lc "blue" front
-set label 4 at   graph 0.95, first 0.098                            "Best C++" tc "blue" offset 2,0.5
+set arrow 4 from graph 0.76, first 0.097 to graph 1.00, first 0.097 nohead lc "blue" front
+set label 4 at   graph 0.95, first 0.097                            "Best C++" tc "blue" offset 2,0.5
 
 plot newhistogram "aa...aa", \
      'data.gnuplot' every ::0::9 using 3:xtic(2) ti columnhead lt 1, \
