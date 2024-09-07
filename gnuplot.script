@@ -1,5 +1,16 @@
-set terminal pngcairo size 2400,1200
-set output 'benchmark_comparison.png'
+set terminal svg size 1200,800 dynamic background 0x282828
+set output 'benchmark_comparison.svg'
+
+fgColor = 0xd5c4a1
+cppColor = 0xfb4934
+
+set key tc rgb fgColor
+set border lc rgb fgColor
+set ls 1 lc rgb fgColor dt 3
+
+set lt 1 lc rgb 0x55bb26
+set lt 2 lc rgb 0xcc241d
+set lt 101 lc rgb cppColor dt 3
 
 set style data histogram
 set xtics nomirror rotate by -45 scale 0
@@ -10,38 +21,38 @@ set grid ytics mytics lt 0 lw 1.5, lt 0 lw 0.5
 set boxwidth 0.8
 
 # Titles and labels
-set ylabel "Time, s"
-set title "Performance"
+set ylabel "Time, s" tc rgb fgColor
+set title "Performance" tc rgb fgColor
 
 # Define error bars for standard deviation
 set style fill transparent solid 0.5
 set style histogram rowstacked
 
-set arrow 1 from graph 0,    first 0.133 to graph 0.24, first 0.133 nohead lc "blue" front
-set label 1 at   graph 0.20, first 0.133                            "Best C++" tc "blue" offset 2,0.5
+set arrow 1 from graph 0,    first 0.133 to graph 0.24, first 0.133 nohead lt 101 front
+set label 1 at   graph 0.20, first 0.133                            "Best C++" tc rgb cppColor offset 2,0.5
 
-set arrow 2 from graph 0.26, first 0.107 to graph 0.49, first 0.107 nohead lc "blue" front
-set label 2 at   graph 0.45, first 0.107                            "Best C++" tc "blue" offset 2,0.5
+set arrow 2 from graph 0.26, first 0.107 to graph 0.49, first 0.107 nohead lt 101 front
+set label 2 at   graph 0.45, first 0.107                            "Best C++" tc rgb cppColor offset 2,0.5
 
-set arrow 3 from graph 0.51, first 0.108 to graph 0.74, first 0.108 nohead lc "blue" front
-set label 3 at   graph 0.70, first 0.108                            "Best C++" tc "blue" offset 2,0.5
+set arrow 3 from graph 0.51, first 0.108 to graph 0.74, first 0.108 nohead lt 101 front
+set label 3 at   graph 0.70, first 0.108                            "Best C++" tc rgb cppColor offset 2,0.5
 
-set arrow 4 from graph 0.76, first 0.097 to graph 1.00, first 0.097 nohead lc "blue" front
-set label 4 at   graph 0.95, first 0.097                            "Best C++" tc "blue" offset 2,0.5
+set arrow 4 from graph 0.76, first 0.097 to graph 1.00, first 0.097 nohead lt 101 front
+set label 4 at   graph 0.95, first 0.097                            "Best C++" tc rgb cppColor offset 2,0.5
 
-plot newhistogram "aa...aa", \
+plot newhistogram "aa...aa" tc rgb fgColor, \
      'data.gnuplot' every ::0::9 using 3:xtic(2) ti columnhead lt 1, \
      ''             every ::0::9 using 5 ti columnhead lt 2, \
      ''             every ::1::10 using 0:($3 + $5):($3 + $5):($3 + $5 + $4) with errorbars notitle lt 3, \
-     newhistogram "aa...aaz", \
+     newhistogram "aa...aaz" tc rgb fgColor, \
      ''             every ::11::20 using 3:xtic(2) notitle lt 1, \
      ''             every ::11::20 using 5 notitle lt 2, \
      ''             every ::11::20 using ($0+11):($3 + $5):($3 + $5):($3 + $5 + $4) with errorbars notitle lt 3, \
-     newhistogram "ab...ab", \
+     newhistogram "ab...ab" tc rgb fgColor, \
      ''             every ::21::30 using 3:xtic(2) notitle lt 1, \
      ''             every ::21::30 using 5 notitle lt 2, \
      ''             every ::21::30 using ($0+22):($3 + $5):($3 + $5):($3 + $5 + $4) with errorbars notitle lt 3, \
-     newhistogram "ab...abz", \
+     newhistogram "ab...abz" tc rgb fgColor, \
      ''             every ::31::40 using 3:xtic(2) notitle lt 1, \
      ''             every ::31::40 using 5 notitle lt 2, \
      ''             every ::31::40 using ($0+33):($3 + $5):($3 + $5):($3 + $5 + $4) with errorbars notitle lt 3, \
