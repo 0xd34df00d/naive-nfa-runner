@@ -23,11 +23,18 @@ dependencies:
 - base >= 4.7 && < 5
 - array
 - bytestring
+- containers
+- directory
 - enummapset
 - hashable
+- interpolate
+- linear-base
 - mmap
 - unordered-containers
 - vector
+
+library:
+  source-dirs: src
 
 default-extensions:
 - ConstraintKinds
