@@ -1,3 +1,4 @@
+# Linear vector stack
 /tmp/10m_aa.txt
   MUT     time    0.674s  (  0.674s elapsed)
   GC      time    0.948s  (  0.948s elapsed)

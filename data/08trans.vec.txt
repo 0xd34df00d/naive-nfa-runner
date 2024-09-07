@@ -1,3 +1,4 @@
+# Boxed δ vector (+ stack)
 /tmp/10m_aa.txt
   MUT     time    0.324s  (  0.324s elapsed)
   GC      time    0.000s  (  0.000s elapsed)

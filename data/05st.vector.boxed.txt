@@ -1,4 +1,5 @@
-/tmp/10m_aa.txt                             
+# Boxed ST stack
+/tmp/10m_aa.txt
   MUT     time    0.534s  (  0.533s elapsed)
   GC      time    0.731s  (  0.731s elapsed)
   Total   time    1.266s  (  1.266s elapsed)
@@ -29,7 +30,7 @@
   MUT     time    0.532s  (  0.531s elapsed)
   GC      time    0.775s  (  0.775s elapsed)
   Total   time    1.309s  (  1.308s elapsed)
-/tmp/10m_aaz.txt                            
+/tmp/10m_aaz.txt
   MUT     time    0.280s  (  0.279s elapsed)
   GC      time    0.688s  (  0.688s elapsed)
   Total   time    0.969s  (  0.968s elapsed)

@@ -1,3 +1,4 @@
+# Explicit cont
 /tmp/10m_aa.txt
   MUT     time    0.702s  (  0.701s elapsed)
   GC      time    0.615s  (  0.615s elapsed)

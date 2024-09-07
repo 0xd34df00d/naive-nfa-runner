@@ -1,3 +1,4 @@
+# List stack
 /tmp/10m_aa.txt
   MUT     time    0.549s  (  0.548s elapsed)
   GC      time    1.073s  (  1.073s elapsed)
